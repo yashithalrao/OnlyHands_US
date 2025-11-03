@@ -1,0 +1,26 @@
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import Login from './features/auth/pages/Login.jsx';
+
+function Dashboard() {
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (!user) return <Navigate to="/login" replace />;
+  return (
+    <div className="p-6 space-y-4">
+      <h2 className="text-2xl font-semibold">Welcome, {user.name}</h2>
+      <p>Role: <span className="font-mono">{user.role}</span></p>
+      <Link className="text-blue-600 underline" to="/login" onClick={() => localStorage.removeItem('user')}>
+        Logout
+      </Link>
+    </div>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+}
