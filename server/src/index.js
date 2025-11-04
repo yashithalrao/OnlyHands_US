@@ -4,7 +4,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
-
+import shiftRoutes from './routes/shift.routes.js'; 
 const app = express();
 
 // middleware
@@ -21,6 +21,8 @@ app.use(cookieParser());
 
 // routes
 app.use('/api/auth', authRoutes);
+app.use('/api/shifts', shiftRoutes);
+
 
 // health
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
