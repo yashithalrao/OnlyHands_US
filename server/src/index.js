@@ -1,10 +1,13 @@
+// server/src/index.js
 import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { connectDB } from './config/db.js';
 import authRoutes from './routes/auth.routes.js';
-import shiftRoutes from './routes/shift.routes.js'; 
+import shiftRoutes from './routes/shift.routes.js';
+import applicationRoutes from './routes/application.routes.js'; // NEW
+
 const app = express();
 
 // middleware
@@ -19,10 +22,10 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-// routes
+// mount routes
 app.use('/api/auth', authRoutes);
 app.use('/api/shifts', shiftRoutes);
-
+app.use('/api/shifts', applicationRoutes); // application routes share the /api/shifts base
 
 // health
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
