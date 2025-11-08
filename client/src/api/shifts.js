@@ -12,3 +12,19 @@ export const publishShift = (id) =>
 // NEW: apply to a shift
 export const applyForShift = (shiftId, note = '') =>
   http.post(`/shifts/${shiftId}/apply`, { note }).then(r => r.data);
+
+
+
+
+
+export const getShiftApplications = (shiftId, status = '') =>
+  http.get(`/shifts/${shiftId}/applications`, { params: status ? { status } : {} }).then(r => r.data);
+
+// approve an application
+export const approveApplication = (applicationId) =>
+  http.post(`/applications/${applicationId}/approve`).then(r => r.data);
+
+// reject an application
+export const rejectApplication = (applicationId) =>
+  http.post(`/applications/${applicationId}/reject`).then(r => r.data);
+

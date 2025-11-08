@@ -1,12 +1,15 @@
-// client/src/features/shifts/pages/ShiftsList.jsx
 import React, { useEffect, useState } from 'react';
-import { getShifts } from '../../../api/shifts'; // adjust path if needed
-import ApplyForShift from './ApplyForShift'; // same dir as earlier created file
+import { getShifts } from '../../../api/shifts';
+import ApplyForShift from './ApplyForShift';
+import { Link } from 'react-router-dom';
 
 export default function ShiftsList() {
   const [shifts, setShifts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  // ✅ add this line
+  const user = JSON.parse(localStorage.getItem('user') || 'null');
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +29,6 @@ export default function ShiftsList() {
     return () => { cancelled = true; };
   }, []);
 
-  // optimistic update handler: replaces the shift in local array
   const onStatusUpdate = (updatedShift) => {
     setShifts(prev => prev.map(s => (s._id === updatedShift._id ? updatedShift : s)));
   };
@@ -40,15 +42,14 @@ export default function ShiftsList() {
       <h1 className="text-2xl font-semibold">Available Shifts</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {shifts.map(shift => (
-          <ShiftCard key={shift._id} shift={shift} onStatusUpdate={onStatusUpdate} />
+          <ShiftCard key={shift._id} shift={shift} onStatusUpdate={onStatusUpdate} user={user} />
         ))}
       </div>
     </div>
   );
 }
 
-/* Small presentational card that uses ApplyForShift */
-function ShiftCard({ shift, onStatusUpdate }) {
+function ShiftCard({ shift, onStatusUpdate, user }) {
   return (
     <div className="border rounded p-4 shadow-sm">
       <div className="flex justify-between items-start">
@@ -62,8 +63,14 @@ function ShiftCard({ shift, onStatusUpdate }) {
         </div>
 
         <div>
-          {/* place apply button / label */}
           <ApplyForShift shift={shift} onStatusUpdate={onStatusUpdate} />
+          {user?.role === 'manager' && (
+            <div className="mt-2">
+              <Link to={`/shifts/${shift._id}/applications`} className="text-blue-600 underline text-sm">
+                View Applications
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>
