@@ -9,6 +9,7 @@ import ShiftsList from "./features/shifts/pages/ShiftsList.jsx";
 import CreatePublishShift from "./features/shifts/pages/CreatePublishShift.jsx";
 import ManagerApplications from "./features/shifts/pages/ManagerApplications.jsx";
 import MyAppliedShifts from "./features/shifts/pages/MyAppliedShifts.jsx";
+import ShiftHistory from "./features/shifts/pages/ShiftHistory.jsx";
 
 // Dashboard Component
 function Dashboard() {
@@ -22,23 +23,29 @@ function Dashboard() {
         Role: <span className="font-mono">{user.role}</span>
       </p>
 
-      {/* Everyone can view available shifts */}
+      {/* Everyone: View shifts */}
       <Link className="text-blue-600 underline block" to="/shifts">
         View Available Shifts
       </Link>
 
-      {/* Volunteers: My Applications */}
+      {/* Volunteer: My Applications */}
       {user.role === "volunteer" && (
         <Link className="text-blue-600 underline block" to="/my-applications">
           My Applied Shifts
         </Link>
       )}
 
-      {/* Managers: Create New Shift */}
+      {/* Manager: Create a shift */}
       {user.role === "manager" && (
-        <Link className="text-blue-600 underline block" to="/shifts/new">
-          Create & Publish Shift
-        </Link>
+        <>
+          <Link className="text-blue-600 underline block" to="/shifts/new">
+            Create & Publish Shift
+          </Link>
+
+          <Link className="text-blue-600 underline block" to="/shifts/history">
+            View Shift History
+          </Link>
+        </>
       )}
 
       {/* Logout */}
@@ -57,7 +64,6 @@ function Dashboard() {
 export default function App() {
   return (
     <Routes>
-
       {/* Auth */}
       <Route path="/login" element={<Login />} />
 
@@ -67,18 +73,16 @@ export default function App() {
       {/* Shifts */}
       <Route path="/shifts" element={<ShiftsList />} />
       <Route path="/shifts/new" element={<CreatePublishShift />} />
+      <Route path="/shifts/history" element={<ShiftHistory />} />
 
-      {/* Manager: View applications for a shift */}
+      {/* Manager: View applications */}
       <Route
         path="/shifts/:id/applications"
         element={<ManagerApplications />}
       />
 
-      {/* Volunteer: View my applications */}
-      <Route
-        path="/my-applications"
-        element={<MyAppliedShifts />}
-      />
+      {/* Volunteer: My applications */}
+      <Route path="/my-applications" element={<MyAppliedShifts />} />
 
       {/* Catch-all */}
       <Route path="*" element={<Navigate to="/login" replace />} />

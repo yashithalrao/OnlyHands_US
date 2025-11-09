@@ -38,3 +38,8 @@ export const getMyApplications = () =>
 export const cancelApplication = (applicationId) =>
   http.delete(`/applications/${applicationId}`).then(r => r.data);
 
+export const completeShift = (id) =>
+  http.patch(`/shifts/${id}/complete`).then(r => r.data);
+
+export const getCompletedShifts = () =>
+  http.get('/shifts/history/all').then(r => r.data);
