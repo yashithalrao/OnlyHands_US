@@ -4,8 +4,10 @@ import {
   publishShift,
   listShifts,
   completeShift,
-  listCompletedShifts       // User Story 7 & History
+  listCompletedShifts,
+  getShiftSummaryReport    // ✅ new import
 } from '../controllers/shift.controller.js';
+
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
@@ -32,5 +34,8 @@ router.get('/history/all', requireAuth, requireManager, listCompletedShifts);
 
 // Mark shift as completed
 router.patch('/:id/complete', requireAuth, requireManager, completeShift);
+// Manager: Summary report of completed shifts
+router.get('/summary', requireAuth, requireManager, getShiftSummaryReport);
+
 
 export default router;

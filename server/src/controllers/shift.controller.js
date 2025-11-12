@@ -177,3 +177,53 @@ export const listCompletedShifts = async (req, res) => {
   }
 };
 
+
+export const getShiftSummaryReport = async (req, res) => {
+  try {
+    if (req.userRole !== 'manager') {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    const { from, to } = req.query;
+
+    // Filter only completed shifts
+    const filter = { status: 'completed' };
+
+    // Optional date range filter
+    if (from || to) {
+      filter.end = {};
+      if (from) filter.end.$gte = new Date(from);
+      if (to) filter.end.$lte = new Date(to);
+    }
+
+    // Fetch completed shifts
+    const shifts = await Shift.find(filter).sort({ end: -1 }).lean();
+
+    // Aggregate volunteer counts for each shift
+    const shiftIds = shifts.map(s => s._id);
+    const counts = await Application.aggregate([
+      { $match: { shiftId: { $in: shiftIds } } },
+      { $group: { _id: "$shiftId", totalVolunteers: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    counts.forEach(c => { countMap[c._id] = c.totalVolunteers; });
+
+    // Attach volunteer counts and return
+    const summary = shifts.map(s => ({
+      _id: s._id,
+      title: s.title,
+      role: s.role,
+      start: s.start,
+      end: s.end,
+      status: s.status,
+      totalVolunteers: countMap[s._id] || 0
+    }));
+
+    res.json(summary);
+  } catch (err) {
+    console.error('[SUMMARY REPORT ERR]', err);
+    res.status(500).json({ message: err.message || 'Failed to load summary report' });
+  }
+};
+

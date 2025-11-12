@@ -43,3 +43,6 @@ export const completeShift = (id) =>
 
 export const getCompletedShifts = () =>
   http.get('/shifts/history/all').then(r => r.data);
+
+export const getShiftSummaryReport = (params = {}) =>
+  http.get('/shifts/summary', { params }).then(r => r.data);
