@@ -46,7 +46,7 @@ export default function ShiftHistory() {
       </div>
 
       {items.length === 0 && (
-        <div className="text-gray-600">No completed shifts available.</div>
+        <div className="text-gray-600">No completed shifts recorded.</div>
       )}
 
       <div className="space-y-3">
@@ -73,7 +73,8 @@ export default function ShiftHistory() {
               </div>
 
               <div className="mt-1">
-                Status: <span className="font-semibold">Completed</span>
+                Volunteers:{" "}
+                <span className="font-semibold">{shift.volunteerCount}</span>
               </div>
             </div>
           </div>

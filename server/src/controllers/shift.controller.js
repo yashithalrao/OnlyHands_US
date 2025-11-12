@@ -148,10 +148,30 @@ export const listCompletedShifts = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden' });
     }
 
-    const items = await Shift.find({ status: 'completed' })
-      .sort({ end: -1 });
+    // Find all completed shifts
+    const shifts = await Shift.find({ status: 'completed' })
+      .sort({ end: -1 })
+      .lean();
 
-    res.json(items);
+    // Count volunteers for each shift
+    const shiftIds = shifts.map(s => s._id);
+
+    const counts = await Application.aggregate([
+      { $match: { shiftId: { $in: shiftIds } } },
+      { $group: { _id: "$shiftId", count: { $sum: 1 } } }
+    ]);
+
+    const countMap = {};
+    counts.forEach(c => { countMap[c._id] = c.count; });
+
+    // Attach counts
+    const result = shifts.map(s => ({
+      ...s,
+      volunteerCount: countMap[s._id] || 0
+    }));
+
+    res.json(result);
+
   } catch (err) {
     res.status(500).json({ message: err.message || 'Failed to load history' });
   }
