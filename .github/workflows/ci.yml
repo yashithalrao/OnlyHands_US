@@ -1,0 +1,175 @@
+name: OnlyHands CI/CD Pipeline
+
+# Run pipeline when pushing or opening PR to master
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  # ------------------------
+  # 1. BUILD STAGE
+  # ------------------------
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Backend Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Install Client Dependencies (optional)
+        working-directory: client
+        run: npm install || true
+
+  # ------------------------
+  # 2. TEST STAGE
+  # ------------------------
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run Unit + Integration Tests
+        working-directory: server
+        run: npm test -- --runInBand
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: server/
+
+  # ------------------------
+  # 3. COVERAGE STAGE
+  # ------------------------
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Generate Coverage Report
+        working-directory: server
+        run: npm run coverage
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: server/coverage/
+
+  # ------------------------
+  # 4. LINT STAGE
+  # ------------------------
+  lint:
+    needs: coverage
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run ESLint
+        working-directory: server
+        run: |
+          npm run lint || true
+          echo "Lint completed."
+
+      - name: Upload Lint Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-report
+          path: server/
+
+  # ------------------------
+  # 5. SECURITY SCAN STAGE
+  # ------------------------
+  security:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run Security Scan (High Severity Only)
+        working-directory: server
+        run: |
+          npm audit --audit-level=high --json > security-report.json || true
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: server/security-report.json
+
+  # ------------------------
+  # 6. DEPLOYMENT ARTIFACT
+  # ------------------------
+  deploy:
+    needs: security
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: build-artifacts/
+
+      - name: Build Deployment Package
+        run: |
+          mkdir deploy
+          cp -r server deploy/server
+          cp -r build-artifacts deploy/reports
+          cp README.md deploy/
+          cd deploy
+          zip -r ../deployment-package.zip .
+
+      - name: Upload Deployment Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-package
+          path: deployment-package.zip
