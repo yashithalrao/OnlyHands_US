@@ -1,16 +1,15 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
   "type": "module",
+  "main": "src/index.js",
+  "description": "",
+  "license": "ISC",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1", 
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage",
+    "coverage:html": "jest --coverage --runInBand && npx http-server coverage/lcov-report",
     "dev": "nodemon src/index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -21,6 +20,10 @@
     "mongoose": "^8.19.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "eslint": "^9.39.1",
+    "jest": "^29.7.0",
+    "jest-html-reporters": "^3.1.7",
+    "nodemon": "^3.1.10",
+    "supertest": "^6.3.3"
   }
 }
