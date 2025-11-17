@@ -285,3 +285,37 @@ export const listMyApplications = async (req, res) => {
     res.status(500).json({ message: err.message || 'Failed to list your applications' });
   }
 };
+
+// === ADD to server/src/controllers/application.controller.js ===
+export const cancelMyApplication = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+
+    // Only cancel your own application
+    const app = await Application.findOne({
+      _id: applicationId,
+      userId: req.userId
+    });
+
+    if (!app) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    // Only pending applications can be cancelled
+    if (app.status !== "pending") {
+      return res
+        .status(400)
+        .json({ message: "Only pending applications can be cancelled" });
+    }
+
+    await Application.deleteOne({ _id: applicationId });
+
+    return res.json({ message: "Application cancelled successfully" });
+  } catch (err) {
+    console.error("[CANCEL ERR]", err);
+    return res
+      .status(500)
+      .json({ message: err.message || "Failed to cancel application" });
+  }
+};
+

@@ -14,7 +14,7 @@ const shiftSchema = new mongoose.Schema(
     // NEW: status to show application workflow (default = open)
     status: {
       type: String,
-      enum: ['open', 'pending_approval', 'closed'],
+      enum: ['open', 'pending_approval', 'closed','completed'],
       default: 'open',
       index: true
     },

@@ -28,3 +28,21 @@ export const approveApplication = (applicationId) =>
 export const rejectApplication = (applicationId) =>
   http.post(`/applications/${applicationId}/reject`).then(r => r.data);
 
+// === ADD to client/src/api/shifts.js ===
+
+// My applications
+export const getMyApplications = () =>
+  http.get('/applications/my').then(r => r.data);
+
+// Cancel my application (pending only)
+export const cancelApplication = (applicationId) =>
+  http.delete(`/applications/${applicationId}`).then(r => r.data);
+
+export const completeShift = (id) =>
+  http.patch(`/shifts/${id}/complete`).then(r => r.data);
+
+export const getCompletedShifts = () =>
+  http.get('/shifts/history/all').then(r => r.data);
+
+export const getShiftSummaryReport = (params = {}) =>
+  http.get('/shifts/summary', { params }).then(r => r.data);

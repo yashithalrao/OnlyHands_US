@@ -1,64 +1,76 @@
-
-// import { Router } from 'express';
-// import { requireAuth } from '../middleware/auth.js';
-// import {
-//   getShiftApplications,
-//   approveApplication,
-//   rejectApplication
-// } from '../controllers/application.controller.js';
-
-// const router = Router();
-
-// // inline manager guard
-// const requireManager = (req, res, next) => {
-//   if (req.userRole !== 'manager') return res.status(403).json({ message: 'Forbidden' });
-//   next();
-// };
-
-// /**
-//  * Shift-scoped routes (mounted at /api/shifts)
-//  * GET /api/shifts/:shiftId/applications
-//  */
-// router.get('/:shiftId/applications', requireAuth, requireManager, getShiftApplications);
-
-// /**
-//  * Application action routes (we'll export a separate router for these)
-//  * POST /api/applications/:applicationId/approve
-//  * POST /api/applications/:applicationId/reject
-//  */
-// const appRouter = Router();
-// appRouter.post('/:applicationId/approve', requireAuth, requireManager, approveApplication);
-// appRouter.post('/:applicationId/reject', requireAuth, requireManager, rejectApplication);
-
-// // Default export for the shift-scoped router, and named export for application actions
-// export default router;
-// export { appRouter };
-import { Router } from 'express';
-import { requireAuth } from '../middleware/auth.js';
+import { Router } from "express";
+import { requireAuth } from "../middleware/auth.js";
 import {
   getShiftApplications,
   approveApplication,
   rejectApplication,
-  applyForShift,            // ✅ import this
-  listMyApplications        // optional if you want "My Applications"
-} from '../controllers/application.controller.js';
+  applyForShift,
+  listMyApplications,
+  cancelMyApplication,
+} from "../controllers/application.controller.js";
 
+/* ---------------------------------------------
+   1. router  →  mounted at /api/shifts
+      Handles:
+        - Apply to a shift
+        - Manager viewing shift applications
+---------------------------------------------- */
 const router = Router();
 
-// ✅ Volunteers apply to a shift
-router.post('/:shiftId/apply', requireAuth, applyForShift);
+// ✅ Volunteer applies to a shift
+// POST /api/shifts/:shiftId/apply
+router.post("/:shiftId/apply", requireAuth, applyForShift);
 
-// Manager routes
+// ✅ Manager-only guard
 const requireManager = (req, res, next) => {
-  if (req.userRole !== 'manager') return res.status(403).json({ message: 'Forbidden' });
+  if (req.userRole !== "manager")
+    return res.status(403).json({ message: "Forbidden" });
   next();
 };
 
-router.get('/:shiftId/applications', requireAuth, requireManager, getShiftApplications);
+// ✅ Manager views applications for a specific shift
+// GET /api/shifts/:shiftId/applications
+router.get(
+  "/:shiftId/applications",
+  requireAuth,
+  requireManager,
+  getShiftApplications
+);
 
+/* ---------------------------------------------
+   2. appRouter  →  mounted at /api/applications
+      Handles:
+        - My applications
+        - Cancel an application
+        - Approve / reject (manager)
+---------------------------------------------- */
 const appRouter = Router();
-appRouter.post('/:applicationId/approve', requireAuth, requireManager, approveApplication);
-appRouter.post('/:applicationId/reject', requireAuth, requireManager, rejectApplication);
+
+// ✅ Volunteer: list my applications
+// GET /api/applications/my
+appRouter.get("/my", requireAuth, listMyApplications);
+
+// ✅ Volunteer: cancel pending application
+// DELETE /api/applications/:applicationId
+appRouter.delete("/:applicationId", requireAuth, cancelMyApplication);
+
+// ✅ Manager: approve application
+// POST /api/applications/:applicationId/approve
+appRouter.post(
+  "/:applicationId/approve",
+  requireAuth,
+  requireManager,
+  approveApplication
+);
+
+// ✅ Manager: reject application
+// POST /api/applications/:applicationId/reject
+appRouter.post(
+  "/:applicationId/reject",
+  requireAuth,
+  requireManager,
+  rejectApplication
+);
 
 export default router;
 export { appRouter };
